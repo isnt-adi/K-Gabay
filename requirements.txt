@@ -10,3 +10,4 @@ pytesseract
 openai-whisper
 googletrans==4.0.0rc1
 pydantic==1.10.13
+sentence-transformers
