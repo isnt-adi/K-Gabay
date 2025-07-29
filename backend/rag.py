@@ -12,7 +12,6 @@ from backend.syst_instructions import QA_PROMPT
 load_dotenv()
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-# --- LLM Loader ---
 def load_llm():
     pipe = pipeline(
         "text2text-generation",
@@ -25,7 +24,6 @@ def load_llm():
 
 llm = load_llm()
 
-# --- Extract Text from PDF ---
 def extract_text_from_pdf(uploaded_file):
     doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
     text = ""
@@ -33,7 +31,6 @@ def extract_text_from_pdf(uploaded_file):
         text += page.get_text()
     return text
 
-# --- RAG Chain Setup ---
 def initialize_qa_chain(uploaded_file):
     raw_text = extract_text_from_pdf(uploaded_file)
 
@@ -45,6 +42,7 @@ def initialize_qa_chain(uploaded_file):
 
     embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectordb = FAISS.from_texts(chunks, embedding=embedder)
+
     retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 2})
 
     qa_chain = RetrievalQA.from_chain_type(
@@ -52,4 +50,6 @@ def initialize_qa_chain(uploaded_file):
         retriever=retriever,
         chain_type="stuff",
         return_source_documents=False,
-        chain_type_kwargs={"
+        chain_type_kwargs={"prompt": QA_PROMPT}
+    )
+    return qa_chain
