@@ -16,7 +16,7 @@ apply_custom_styles()
 # --- Centered Logo ---
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.image("logo.jfif", use_column_width=True)
+    st.image("logo.jfif", use_container_width=True)
 
 # --- Sidebar: File Upload & FAQs ---
 with st.sidebar:
