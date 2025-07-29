@@ -1,0 +1,11 @@
+streamlit
+python-dotenv
+transformers
+torch
+langchain
+faiss-cpu
+pymupdf  # for PDF reading (PyMuPDF)
+Pillow
+pytesseract
+whisper
+googletrans==4.0.0rc1
