@@ -70,6 +70,5 @@ def apply_custom_styles():
                 -0.25px  0.25px 0 gray,
                  0.25px  0.25px 0 gray !important;
         }
-                
     </style>
     """, unsafe_allow_html=True)
