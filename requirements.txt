@@ -2,7 +2,7 @@ streamlit
 python-dotenv
 transformers
 torch
-langchain
+langchain==0.1.14
 faiss-cpu
 pymupdf
 Pillow
