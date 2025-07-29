@@ -4,8 +4,9 @@ transformers
 torch
 langchain
 faiss-cpu
-pymupdf  # for PDF reading (PyMuPDF)
+pymupdf
 Pillow
 pytesseract
 openai-whisper
 googletrans==4.0.0rc1
+pydantic==1.10.13
