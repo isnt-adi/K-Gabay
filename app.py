@@ -140,4 +140,4 @@ if user_prompt:
         final_response = "⚠️ No PDF processed yet. Please upload a PDF or wait for the default."
 
     st.session_state.messages.append({"role": "assistant", "content": final_response})
-    st.experimental_rerun()
+    st.rerun()
