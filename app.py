@@ -93,4 +93,3 @@ if user_prompt:
         final_response = "⚠️ No PDF processed yet."
 
     st.session_state.messages.append({"role": "assistant", "content": final_response})
-    st.rerun()
