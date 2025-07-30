@@ -18,7 +18,7 @@ def load_llm():
         "text2text-generation",
         model="google/flan-t5-large",  # more accurate than flan-t5-base
         tokenizer="google/flan-t5-large",
-        device=0,
+        device=-1,
         max_new_tokens=512
     )
     return HuggingFacePipeline(pipeline=pipe)
