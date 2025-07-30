@@ -1,89 +1,75 @@
 import streamlit as st
-from backend.utils import (
-    translate_input,
-    translate_output,
-    transcribe_audio,
-    extract_text_from_image,
-    get_faqs,
-)
-from backend.rag import initialize_qa_chain
-from design import apply_custom_styles
+from backend.system import initialize_qa_chain
+from backend.utils import extract_text_from_file, detect_language, convert_audio_to_text, extract_text_from_image, translate_text
 
-# --- Page Config & Styling ---
+# --- Page Config ---
 st.set_page_config(page_title="K-Gabay", layout="wide")
-apply_custom_styles()
 
-# --- Centered Logo ---
+# --- Custom CSS for Sidebar and Upload Buttons ---
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {
+        background: linear-gradient(to bottom, #003300, #25d025);
+        color: white;
+    }
+    .small-upload .stFileUploader {
+        padding: 0.25rem !important;
+        font-size: 0.75rem !important;
+        max-width: 200px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- Logo ---
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.image("logo.jfif", use_container_width=True)
+    st.image("logo.jfif", width=900)
 
-# --- Sidebar: File Upload & FAQs ---
-with st.sidebar:
-    st.subheader("📄 Upload a PDF")
-    uploaded_file = st.file_uploader("Upload an educational PDF", type="pdf")
-    st.subheader("📌 FAQs")
-    for faq in get_faqs():
-        with st.expander(faq["question"]):
-            st.write(faq["answer"])
+# --- Upload Section in Dropdown ---
+with st.expander("📎 Upload Image, Audio, or PDF"):
+    st.markdown('<div class="small-upload">', unsafe_allow_html=True)
+    pdf_file = st.file_uploader("📄 Upload PDF", type=["pdf"])
+    image_file = st.file_uploader("🖼️ Upload Image", type=["png", "jpg", "jpeg"])
+    audio_file = st.file_uploader("🎙️ Upload Audio", type=["mp3", "wav"])
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- QA Chain Setup ---
-if uploaded_file and "qa_chain" not in st.session_state:
-    try:
-        st.session_state.qa_chain = initialize_qa_chain(uploaded_file)
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Hi there! Ask me anything about the PDF!"}
-        ]
-    except Exception as e:
-        st.error(f"❌ PDF processing failed: {e}")
+# --- Initialize QA System ---
+qa_chain = initialize_qa_chain()
 
-# --- Fallback Message History ---
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Upload a PDF to start chatting!"}
-    ]
+# --- Chat Interface ---
+user_input = st.chat_input("Ask me anything about the uploaded content...")
 
-# --- Display Chat Messages ---
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+if user_input:
+    final_input = ""
 
-# --- Input Row: Audio + Image + Text ---
-input_cols = st.columns([7, 1, 1])
-user_prompt = ""
-
-with input_cols[0]:
-    if not user_prompt:
-        user_prompt = st.chat_input("Type your message here...")
-
-
-with input_cols[1]:
-    audio_file = st.file_uploader("🎙️", type=["wav", "mp3"], label_visibility="collapsed", key="audio")
-    if audio_file:
-        user_prompt = transcribe_audio(audio_file)
-        st.success(f"Transcribed: {user_prompt}")
-
-with input_cols[2]:
-    image_file = st.file_uploader("🖼️", type=["png", "jpg", "jpeg"], label_visibility="collapsed", key="image")
+    # Handle uploaded content
+    if pdf_file:
+        text = extract_text_from_file(pdf_file)
+        final_input += text + "\n"
     if image_file:
-        user_prompt = extract_text_from_image(image_file)
-        st.success(f"Extracted: {user_prompt}")
-        
-# --- Chat Handling ---
-if user_prompt:
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
+        image_text = extract_text_from_image(image_file)
+        final_input += image_text + "\n"
+    if audio_file:
+        audio_text = convert_audio_to_text(audio_file)
+        final_input += audio_text + "\n"
 
-    if "qa_chain" in st.session_state:
-        translated_input, lang = translate_input(user_prompt)
+    final_input += user_input
 
-        with st.spinner("Thinking..."):
-            try:
-                raw_response = st.session_state.qa_chain.invoke(translated_input)
-                final_response = translate_output(raw_response, lang)
-            except Exception as e:
-                final_response = f"❌ Error: {e}"
-    else:
-        final_response = "⚠️ No PDF processed yet."
+    # Detect language and translate if necessary
+    detected_lang = detect_language(final_input)
+    if detected_lang != "en":
+        final_input = translate_text(final_input, detected_lang, "en")
 
-    st.session_state.messages.append({"role": "assistant", "content": final_response})
-    st.rerun()
+    # Get answer
+    response = qa_chain.invoke({"question": final_input})
+    answer = response if isinstance(response, str) else response.get("answer", "Sorry, I couldn't find an answer.")
+
+    # Translate answer back to original language
+    if detected_lang != "en":
+        answer = translate_text(answer, "en", detected_lang)
+
+    # Display messages
+    with st.chat_message("user"):
+        st.write(user_input)
+    with st.chat_message("assistant"):
+        st.write(answer)
