@@ -32,7 +32,7 @@ if uploaded_file:
     source_pdf = uploaded_file
 else:
     source_pdf = open("backend/data/base.pdf", "rb")
-    st.info("Using default PDF: base.pdf")
+    st.info("Using a default PDF. Upload pdfs in the sidebar for more detailed answers.")
 
 # Always initialize or reinitialize QA chain if file changes
 if "last_source" not in st.session_state or st.session_state.last_source != source_pdf:
