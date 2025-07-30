@@ -1,105 +1,91 @@
-# K-Gabay: Edu Assistant for Filipino Youth 🇵🇭
+K-GABAY: A COLLEGE-PREP EDUCATIONAL ASSISTANT FOR FILIPINO YOUTH
+================================================================
 
-K-Gabay is a multilingual, document-aware educational assistant designed to help Filipino senior high school students and out-of-school youth in the National Capital Region (NCR) navigate college admissions. It supports text, audio, and image inputs to answer queries about programs, schedules, scholarships, and more—powered by a Retrieval-Augmented Generation (RAG) pipeline.
+K-Gabay is an AI-powered educational assistant designed to support Filipino senior high school students and out-of-school youth (OSY) in the National Capital Region (NCR) as they navigate the complex process of entering higher education.
 
----
+Built around SDG 4 – Quality Education, K-Gabay bridges information gaps in college admissions by consolidating official resources from CHED, TESDA, and DepEd, delivered through a multilingual, retrieval-augmented chatbot interface.
 
-## 🎯 Features
+PROBLEM STATEMENT
+------------------
 
-* 🧠 **Retrieval-Augmented Generation (RAG)** using CHED, TESDA, and DepEd source documents
-* 📄 **PDF Upload & Vectorization** with FAISS and LangChain
-* 🗣️ **Multilingual Support** (English, Filipino, Taglish)
-* 🎙️ **Audio Input** via OpenAI Whisper transcription
-* 🖼️ **Image Input** using OCR (Tesseract)
-* 💬 **ChatGPT-style UI** with persistent short-term chat history
-* 📌 **FAQs Sidebar** with expandable common questions
+Despite the abundance of educational programs, many youth in NCR still miss college opportunities due to:
 
----
+- Lack of early orientation and guidance
+- Confusing or mismatched exam/application timelines
+- Scarce awareness of scholarships or accredited programs
+- Language barriers and limited digital access
 
-## 🧰 Technologies Used
+SOLUTION
+--------
 
-* **Streamlit** for frontend interface
-* **LangChain** for QA and prompt chaining
-* **FAISS** for in-memory vector store
-* **Transformers (Flan-T5)** for generation
-* **PyMuPDF** for PDF parsing
-* **Pillow + pytesseract** for image OCR
-* **OpenAI Whisper** for audio transcription
-* **Googletrans** for multilingual translation
+K-Gabay helps students:
 
----
+- Upload and ask questions about educational PDFs (CHED memoranda, TESDA modules, etc.)
+- Get info on college programs, admission schedules, and accredited schools
+- Explore scholarship opportunities
+- Extract text from images and transcribe audio using OCR and Whisper
+- Ask questions in Tagalog, English, or Taglish — auto-translated!
 
-## 🗂️ File Structure
+TECH STACK
+----------
 
-```
-k-gabay/
-├── app.py                     # Streamlit main app
-├── design.py                 # UI styles
-├── backend/
-│   ├── system.py             # Core logic: QA, OCR, audio, translation
-│   └── syst_instructions.py  # LangChain RAG prompt
-├── requirements.txt
-└── README.md
-```
+Frontend       : Streamlit
+Model          : google/flan-t5-base (HuggingFace)
+RAG            : LangChain + FAISS
+Embeddings     : all-MiniLM-L6-v2
+PDF Handling   : PyMuPDF
+OCR            : Tesseract
+Audio Handling : OpenAI Whisper
+Translation    : googletrans
+Styling        : Custom CSS
 
----
+FOLDER STRUCTURE
+-----------------
 
-## 🚀 Getting Started (Local)
+K-Gabay/
+│
+├── app.py                   -> Main Streamlit app
+├── design.py                -> Custom styles
+├── requirements.txt         -> Python dependencies
+├── logo.jfif                -> Branding image
+│
+└── backend/
+    ├── rag.py               -> PDF processing and RAG logic
+    ├── utils.py             -> OCR, audio, translation, FAQs
+    └── syst_instructions.py -> System prompt template
 
-### 1. Clone the repo
+HOW TO RUN
+----------
 
-```bash
-git clone https://github.com/yourusername/k-gabay.git
-cd k-gabay
-```
+1. Clone the repository
 
-### 2. Create virtual environment
+   git clone https://github.com/YOUR_USERNAME/K-Gabay.git
+   cd K-Gabay
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # For Windows
-```
+2. Install dependencies
 
-### 3. Install dependencies
+   pip install -r requirements.txt
 
-```bash
-pip install -r requirements.txt
-```
+3. Run the app
 
-### 4. Run the app
+   streamlit run app.py
 
-```bash
-streamlit run app.py
-```
+SOURCE DOCUMENTS
+-----------------
 
-> 🔒 **Note:** Ensure you have a `.env` file with any necessary HuggingFace keys or model configs.
+- CHED Connect        : https://phlconnect.ched.gov.ph/
+- TESDA e-Learning    : https://e-tesda.gov.ph/
+- CHED COE List (PDF) : https://ieducationphl.ched.gov.ph/
+- PAASCU Schools      : https://paascu.org.ph/member-database/
 
----
+SAMPLE QUESTIONS
+----------------
 
-## ☁️ Deploying to Streamlit Cloud
+- "Kailan ang entrance exam para sa nursing sa NCR?"
+- "What is the passing grade in CHED Flexible Learning guidelines?"
+- "I-upload ko yung TESDA Dressmaking module, then tanong ako."
 
-1. Push the repo to GitHub
-2. Go to [Streamlit Cloud](https://streamlit.io/cloud)
-3. Connect your GitHub repo
-4. Set `app.py` as the main file
-5. Add `HF_API_KEY` or other secrets in Streamlit's Secrets tab
+LICENSE
+-------
 
----
-
-## 💡 Future Enhancements
-
-* 🎓 Scholarship Matching System
-* 🧾 Document citation rendering
-* 🧑‍🎓 Personalized guidance based on learner profile
-
----
-
-## 📜 License
-
-MIT License
-
----
-
-## 🤝 Acknowledgments
-
-Inspired by the Filipino Facebook community "Kolehiyo Updates" and aligned with **SDG 4: Quality Education**.
+This project is for educational and non-commercial use only.
