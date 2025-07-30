@@ -27,23 +27,24 @@ with st.sidebar:
         with st.expander(faq["question"]):
             st.write(faq["answer"])
 
-# --- QA Chain Setup ---
-from pathlib import Path
+# Always determine which PDF to use
+if uploaded_file:
+    source_pdf = uploaded_file
+else:
+    source_pdf = open("backend/data/base.pdf", "rb")
+    st.info("Using default PDF: base.pdf")
 
-if "qa_chain" not in st.session_state:
-    if uploaded_file:
-        source_pdf = uploaded_file
-    else:
-        st.info("Using a sample document since no PDF is uploaded.")
-        source_pdf = open("backend/data/base.pdf", "rb")
-
+# Always initialize or reinitialize QA chain if file changes
+if "last_source" not in st.session_state or st.session_state.last_source != source_pdf:
     try:
         st.session_state.qa_chain = initialize_qa_chain(source_pdf)
+        st.session_state.last_source = source_pdf
         st.session_state.messages = [
             {"role": "assistant", "content": "Hi there! Ask me anything about the document."}
         ]
     except Exception as e:
         st.error(f"❌ PDF processing failed: {e}")
+
 
 
 # --- Fallback Message History ---
