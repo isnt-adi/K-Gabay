@@ -1,5 +1,5 @@
 import streamlit as st
-from backend.system import initialize_qa_chain
+from backend.rag import initialize_qa_chain
 from backend.utils import extract_text_from_file, detect_language, convert_audio_to_text, extract_text_from_image, translate_text
 
 # --- Page Config ---
