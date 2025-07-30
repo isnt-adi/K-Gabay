@@ -48,37 +48,27 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- Chat Input Form ---
+# --- Input Row: Audio + Image + Text ---
+input_cols = st.columns([7, 1, 1])
 user_prompt = ""
-with st.form("chat_input", clear_on_submit=True):
-    col1, col2, col3 = st.columns([6, 1, 1])
 
-    # Text input
-    user_text = col1.text_input("Ask K-Gabay something")
+with input_cols[0]:
+    if not user_prompt:
+        user_prompt = st.chat_input("Type your message here...")
 
-    # Audio upload via mic icon
-    with col2:
-        st.markdown('<label for="audio-upload" class="upload-icon">🎤</label>', unsafe_allow_html=True)
-        user_audio = st.file_uploader("Audio", type=["mp3", "wav", "m4a"], key="audio-upload", label_visibility="collapsed")
 
-    # Image upload via photo icon
-    with col3:
-        st.markdown('<label for="image-upload" class="upload-icon">📷</label>', unsafe_allow_html=True)
-        user_image = st.file_uploader("Image", type=["jpg", "jpeg", "png"], key="image-upload", label_visibility="collapsed")
-
-    submitted = st.form_submit_button("📨 Send")
-
-# --- Input Prioritization ---
-if submitted:
-    if user_text:
-        user_prompt = user_text
-    elif user_audio:
-        user_prompt = transcribe_audio(user_audio)
+with input_cols[1]:
+    audio_file = st.file_uploader("🎙️", type=["wav", "mp3"], label_visibility="collapsed", key="audio")
+    if audio_file:
+        user_prompt = transcribe_audio(audio_file)
         st.success(f"Transcribed: {user_prompt}")
-    elif user_image:
-        user_prompt = extract_text_from_image(user_image)
-        st.success(f"Extracted: {user_prompt}")
 
+with input_cols[2]:
+    image_file = st.file_uploader("🖼️", type=["png", "jpg", "jpeg"], label_visibility="collapsed", key="image")
+    if image_file:
+        user_prompt = extract_text_from_image(image_file)
+        st.success(f"Extracted: {user_prompt}")
+        
 # --- Chat Handling ---
 if user_prompt:
     st.session_state.messages.append({"role": "user", "content": user_prompt})
@@ -88,7 +78,7 @@ if user_prompt:
 
         with st.spinner("Thinking..."):
             try:
-                raw_response = st.session_state.qa_chain.run(translated_input)
+                raw_response = st.session_state.qa_chain.invoke(translated_input)
                 final_response = translate_output(raw_response, lang)
             except Exception as e:
                 final_response = f"❌ Error: {e}"
