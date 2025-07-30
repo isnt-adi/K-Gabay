@@ -1,3 +1,4 @@
+
 # 📘 K-Gabay: An AI College Assistant for Filipino Youth
 
 ### 🎓 K-Gabay: Educational Assistant Powered by RAG
@@ -37,49 +38,54 @@
 ## 📦 Installation
 
 ### 1. Clone the Repository
-```bash
+
+```
 git clone https://github.com/isnt-adi/K-Gabay.git
 cd K-Gabay
-2. Install System Dependencies
-bash
-Copy
-Edit
+```
+
+### 2. Install System Dependencies
+
+```
 sudo apt install ffmpeg tesseract-ocr
-3. Set Up Virtual Environment and Install Requirements
-bash
-Copy
-Edit
+```
+
+### 3. Set Up Virtual Environment and Install Requirements
+
+```
 python -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-🧪 Running the App
-bash
-Copy
-Edit
+```
+
+---
+
+## 🧪 Running the App
+
+```
 streamlit run app.py
+```
+
 Then:
+- Upload a CHED, TESDA, or DepEd document
+- Or take a photo / screenshot of a flyer
+- Or ask by voice in Filipino or English
+- Get instant, accurate, document-based answers
 
-Upload a CHED, TESDA, or DepEd document
+---
 
-Or take a photo / screenshot of a flyer
+## 🧠 Example Questions
 
-Or ask by voice in Filipino or English
+- “May scholarship ba para sa STEM sa QC?”
+- “Translate this CHED memo to Tagalog.”
+- “Upload ko yung flyer — kailan ang deadline ng application?”
+- “Paano mag-apply sa TESDA kung hindi graduate ng SHS?”
 
-Get instant, accurate, document-based answers
+---
 
-🧠 Example Questions
-“May scholarship ba para sa STEM sa QC?”
+## 📁 Project Structure
 
-“Translate this CHED memo to Tagalog.”
-
-“Upload ko yung flyer — kailan ang deadline ng application?”
-
-“Paano mag-apply sa TESDA kung hindi graduate ng SHS?”
-
-📁 Project Structure
-bash
-Copy
-Edit
+```
 K-Gabay/
 ├── app.py                  # Streamlit UI logic
 ├── design.py               # Custom CSS + layout
@@ -90,12 +96,23 @@ K-Gabay/
     ├── rag.py              # QA chain logic (RAG + LangChain)
     ├── utils.py            # OCR, audio, translation, and helper tools
     └── syst_instructions.py # System prompt + few-shot examples
-🎯 SDG 4 – Quality Education
-K-Gabay supports UN Sustainable Development Goal #4 by improving access to trustworthy, localized college information for underprivileged students in the Philippines. Inspired by Kolehiyo Updates groups, it aims to centralize scattered educational resources into a smart, friendly chatbot.
+```
 
-🤝 Contributing
-Got school datasets, feedback, or feature ideas?
+---
+
+## 🎯 SDG 4 – Quality Education
+
+K-Gabay supports **UN Sustainable Development Goal #4** by improving access to trustworthy, localized college information for underprivileged students in the Philippines. Inspired by *Kolehiyo Updates* groups, it aims to centralize scattered educational resources into a smart, friendly chatbot.
+
+---
+
+## 🤝 Contributing
+
+Got school datasets, feedback, or feature ideas?  
 Feel free to fork the repo, open an issue, or send a pull request.
 
-📜 License
+---
+
+## 📜 License
+
 MIT License — for educational, non-commercial use only.
