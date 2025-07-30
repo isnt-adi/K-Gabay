@@ -23,6 +23,7 @@ def load_llm():
         "text2text-generation",
         model=model,
         tokenizer=tokenizer,
+        truncation=True,
         max_new_tokens=512
     )
     return HuggingFacePipeline(pipeline=pipe)
@@ -43,7 +44,7 @@ def initialize_qa_chain(uploaded_file):
     raw_text = extract_text_from_pdf(uploaded_file)
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=400,
         chunk_overlap=50
     )
     chunks = splitter.split_text(raw_text)
