@@ -44,10 +44,12 @@ def initialize_qa_chain(pdf_file):
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
-            max_length=512,
+            max_length=200
             truncation=True,
-            device=-1  # CPU
+            device="cpu",
+            model_kwargs={"cache_dir": "./models"}
         )
+        
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
         # Create Retrieval-Augmented QA chain
