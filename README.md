@@ -1,91 +1,101 @@
-K-GABAY: A COLLEGE-PREP EDUCATIONAL ASSISTANT FOR FILIPINO YOUTH
-================================================================
+# 📘 K-Gabay: An AI College Assistant for Filipino Youth
 
-K-Gabay is an AI-powered educational assistant designed to support Filipino senior high school students and out-of-school youth (OSY) in the National Capital Region (NCR) as they navigate the complex process of entering higher education.
+### 🎓 K-Gabay: Educational Assistant Powered by RAG
 
-Built around SDG 4 – Quality Education, K-Gabay bridges information gaps in college admissions by consolidating official resources from CHED, TESDA, and DepEd, delivered through a multilingual, retrieval-augmented chatbot interface.
+**K-Gabay** is a multilingual, AI-powered chatbot that helps Filipino senior high school students and out-of-school youth in the **National Capital Region (NCR)** navigate the college admission process. It uses **Retrieval-Augmented Generation (RAG)** to provide accurate answers from CHED, TESDA, and DepEd documents — with support for **Taglish**, **image uploads**, and **spoken queries**.
 
-PROBLEM STATEMENT
-------------------
+---
 
-Despite the abundance of educational programs, many youth in NCR still miss college opportunities due to:
+## 🚀 Features
 
-- Lack of early orientation and guidance
-- Confusing or mismatched exam/application timelines
-- Scarce awareness of scholarships or accredited programs
-- Language barriers and limited digital access
+| Feature                          | Description                                                                 |
+|----------------------------------|-----------------------------------------------------------------------------|
+| 📄 PDF Knowledge Retrieval       | Upload CHED/TESDA/DepEd PDFs and ask questions directly                     |
+| 🧠 RAG-powered Q&A               | Combines document retrieval + HuggingFace Flan-T5 for better answers        |
+| 🌐 Multilingual Input            | English, Filipino, and Taglish supported automatically                      |
+| 🖼️ OCR from Images               | Reads and answers questions based on text in screenshots or flyers         |
+| 🎙️ Audio Input                   | Ask questions by voice via Whisper (speech-to-text)                         |
+| 🧾 Session-based Chat Memory     | Short-term memory lets the bot understand follow-up questions               |
+| ❓ Sidebar FAQ                   | Auto-generated helpful questions from your uploaded documents              |
 
-SOLUTION
---------
+---
 
-K-Gabay helps students:
+## 🛠️ Tech Stack
 
-- Upload and ask questions about educational PDFs (CHED memoranda, TESDA modules, etc.)
-- Get info on college programs, admission schedules, and accredited schools
-- Explore scholarship opportunities
-- Extract text from images and transcribe audio using OCR and Whisper
-- Ask questions in Tagalog, English, or Taglish — auto-translated!
+- **Frontend:** Streamlit  
+- **Backend:** Python  
+- **AI/LLM:** HuggingFace Transformers (Flan-T5 base/large)  
+- **RAG Engine:** LangChain + FAISS  
+- **Embedding:** all-MiniLM-L6-v2 (via HuggingFaceEmbeddings)  
+- **Speech-to-Text:** OpenAI Whisper  
+- **OCR:** Tesseract (`pytesseract`)  
+- **PDF Parsing:** PyMuPDF (`fitz`)  
+- **Translation:** Google Translate (`googletrans`)
 
-TECH STACK
-----------
+---
 
-Frontend       : Streamlit
-Model          : google/flan-t5-base (HuggingFace)
-RAG            : LangChain + FAISS
-Embeddings     : all-MiniLM-L6-v2
-PDF Handling   : PyMuPDF
-OCR            : Tesseract
-Audio Handling : OpenAI Whisper
-Translation    : googletrans
-Styling        : Custom CSS
+## 📦 Installation
 
-FOLDER STRUCTURE
------------------
+### 1. Clone the Repository
+```bash
+git clone https://github.com/isnt-adi/K-Gabay.git
+cd K-Gabay
+2. Install System Dependencies
+bash
+Copy
+Edit
+sudo apt install ffmpeg tesseract-ocr
+3. Set Up Virtual Environment and Install Requirements
+bash
+Copy
+Edit
+python -m venv venv
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+🧪 Running the App
+bash
+Copy
+Edit
+streamlit run app.py
+Then:
 
+Upload a CHED, TESDA, or DepEd document
+
+Or take a photo / screenshot of a flyer
+
+Or ask by voice in Filipino or English
+
+Get instant, accurate, document-based answers
+
+🧠 Example Questions
+“May scholarship ba para sa STEM sa QC?”
+
+“Translate this CHED memo to Tagalog.”
+
+“Upload ko yung flyer — kailan ang deadline ng application?”
+
+“Paano mag-apply sa TESDA kung hindi graduate ng SHS?”
+
+📁 Project Structure
+bash
+Copy
+Edit
 K-Gabay/
-│
-├── app.py                   -> Main Streamlit app
-├── design.py                -> Custom styles
-├── requirements.txt         -> Python dependencies
-├── logo.jfif                -> Branding image
+├── app.py                  # Streamlit UI logic
+├── design.py               # Custom CSS + layout
+├── requirements.txt        # Python + ML dependencies
+├── logo.jfif               # App branding logo
 │
 └── backend/
-    ├── rag.py               -> PDF processing and RAG logic
-    ├── utils.py             -> OCR, audio, translation, FAQs
-    └── syst_instructions.py -> System prompt template
+    ├── rag.py              # QA chain logic (RAG + LangChain)
+    ├── utils.py            # OCR, audio, translation, and helper tools
+    └── syst_instructions.py # System prompt + few-shot examples
+🎯 SDG 4 – Quality Education
+K-Gabay supports UN Sustainable Development Goal #4 by improving access to trustworthy, localized college information for underprivileged students in the Philippines. Inspired by Kolehiyo Updates groups, it aims to centralize scattered educational resources into a smart, friendly chatbot.
 
-HOW TO RUN
-----------
+🤝 Contributing
+Got school datasets, feedback, or feature ideas?
+Feel free to fork the repo, open an issue, or send a pull request.
 
-1. Clone the repository
-
-   git clone https://github.com/YOUR_USERNAME/K-Gabay.git
-   cd K-Gabay
-
-2. Install dependencies
-
-   pip install -r requirements.txt
-
-3. Run the app
-
-   streamlit run app.py
-
-SOURCE DOCUMENTS
------------------
-
-- CHED Connect        : https://phlconnect.ched.gov.ph/
-- TESDA e-Learning    : https://e-tesda.gov.ph/
-- CHED COE List (PDF) : https://ieducationphl.ched.gov.ph/
-- PAASCU Schools      : https://paascu.org.ph/member-database/
-
-SAMPLE QUESTIONS
-----------------
-
-- "Kailan ang entrance exam para sa nursing sa NCR?"
-- "What is the passing grade in CHED Flexible Learning guidelines?"
-- "I-upload ko yung TESDA Dressmaking module, then tanong ako."
-
-LICENSE
--------
-
-This project is for educational and non-commercial use only.
+📜 License
+MIT License — for educational, non-commercial use only.
