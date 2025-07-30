@@ -77,7 +77,7 @@ if user_prompt:
 
         with st.spinner("Thinking..."):
             try:
-                raw_response = st.session_state.qa_chain.run(translated_input)
+                raw_response = st.session_state.qa_chain.invoke(translated_input)
                 final_response = translate_output(raw_response, lang)
             except Exception as e:
                 final_response = f"❌ Error: {e}"
