@@ -44,7 +44,7 @@ def initialize_qa_chain(pdf_file):
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
-            max_length=200
+            max_length=200,
             truncation=True,
             device="cpu",
             model_kwargs={"cache_dir": "./models"}
