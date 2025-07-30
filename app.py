@@ -35,7 +35,7 @@ if "qa_chain" not in st.session_state:
         source_pdf = uploaded_file
     else:
         st.info("Using a sample document since no PDF is uploaded.")
-        source_pdf = open("/backend/data/With-Entrance-Exam.pdf", "rb")
+        source_pdf = open("/backend/data/base.pdf", "rb")
 
     try:
         st.session_state.qa_chain = initialize_qa_chain(source_pdf)
