@@ -1,11 +1,11 @@
 from transformers import pipeline, AutoTokenizer
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.llms import HuggingFacePipeline
+from langchain_huggingface import HuggingFacePipeline
 from backend.syst_instructions import QA_PROMPT
 import tempfile
 import os
@@ -34,8 +34,8 @@ def initialize_qa_chain(pdf_file):
         )
         docs = text_splitter.split_documents(documents)
 
-        # Step 3: Create FAISS index
-        embeddings = HuggingFaceEmbeddings()
+        # Step 3: Create FAISS index with explicit model name
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         vectorstore = FAISS.from_documents(docs, embeddings)
 
         # Step 4: Set up generation pipeline
@@ -48,9 +48,10 @@ def initialize_qa_chain(pdf_file):
         )
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
+        # Step 5: Prompt
         prompt = QA_PROMPT
-        
-        # Step 6: Create RAG chain
+
+        # Step 6: Create QA chain (RAG)
         qa_chain = RetrievalQA.from_chain_type(
             llm=local_llm,
             chain_type="stuff",
