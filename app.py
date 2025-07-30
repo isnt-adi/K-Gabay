@@ -1,93 +1,84 @@
 import streamlit as st
-from backend.utils import (
-    translate_input,
-    translate_output,
-    transcribe_audio,
-    extract_text_from_image,
-    get_faqs,
-)
 from backend.rag import initialize_qa_chain
-from design import apply_custom_styles
+from backend.utils import (
+    extract_text_from_file,
+    detect_language,
+    convert_audio_to_text,
+    extract_text_from_image,
+    translate_text
+)
 
-# --- Page Config & Styling ---
+# --- Page Config ---
 st.set_page_config(page_title="K-Gabay", layout="wide")
-apply_custom_styles()
 
-# --- Centered Logo ---
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.image("logo.jfif", use_container_width=True)
+# --- App Logo and Title ---
+st.markdown("<h1 style='text-align: center;'>📚 K-Gabay</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Your multilingual education assistant powered by AI + CHED/TESDA data</p>", unsafe_allow_html=True)
 
-# --- Sidebar: File Upload & FAQs ---
-with st.sidebar:
-    st.subheader("📄 Upload a PDF")
-    uploaded_file = st.file_uploader("Upload an educational PDF", type="pdf")
-    st.subheader("📌 FAQs")
-    for faq in get_faqs():
-        with st.expander(faq["question"]):
-            st.write(faq["answer"])
+# --- Initialize Session State ---
+if "qa_chain" not in st.session_state:
+    st.session_state.qa_chain = initialize_qa_chain()
 
-# --- QA Chain Setup ---
-if uploaded_file and "qa_chain" not in st.session_state:
-    try:
-        st.session_state.qa_chain = initialize_qa_chain(uploaded_file)
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Hi there! Ask me anything about the PDF!"}
-        ]
-    except Exception as e:
-        st.error(f"❌ PDF processing failed: {e}")
-
-# --- Fallback Message History ---
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Upload a PDF to start chatting!"}
-    ]
+    st.session_state.messages = []
 
-# --- Display Chat Messages ---
+# --- Display Chat History ---
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- Input Selector ---
-col1, col2 = st.columns([3, 1])
-with col2:
-    input_mode = st.radio("Choose input type:", ["Text", "Audio", "Image"])
-with col1:
+# --- Chat Input Form ---
+with st.form("chat_input", clear_on_submit=True):
+    col1, col2, col3 = st.columns([6, 1, 1])
+
+    # Text input
+    user_text = col1.text_input("Ask K-Gabay something", label_visibility="collapsed")
+
+    # Audio upload via mic icon
+    with col2:
+        st.markdown('<label for="audio-upload" class="upload-icon">🎤</label>', unsafe_allow_html=True)
+        user_audio = st.file_uploader("Audio", type=["mp3", "wav", "m4a"], key="audio-upload", label_visibility="collapsed")
+
+    # Image upload via photo icon
+    with col3:
+        st.markdown('<label for="image-upload" class="upload-icon">📷</label>', unsafe_allow_html=True)
+        user_image = st.file_uploader("Image", type=["jpg", "jpeg", "png"], key="image-upload", label_visibility="collapsed")
+
+    submitted = st.form_submit_button("📨 Send")
+
+# --- Process User Input ---
+if submitted:
     user_prompt = ""
 
-    if input_mode == "Text":
-        user_prompt = st.chat_input("Type your message here...")
+    if user_text:
+        user_prompt = user_text
+    elif user_audio:
+        user_prompt = convert_audio_to_text(user_audio)
+    elif user_image:
+        user_prompt = extract_text_from_image(user_image)
 
-    elif input_mode == "Audio":
-        with st.expander("🎤 Upload Audio File"):
-            audio_file = st.file_uploader("Upload audio", type=["wav", "mp3"])
-            if audio_file:
-                user_prompt = transcribe_audio(audio_file)
-                st.success(f"Transcribed: {user_prompt}")
+    if not user_prompt:
+        st.warning("Please enter a question, upload an image, or speak your question.")
+        st.stop()
 
-    elif input_mode == "Image":
-        with st.expander("🖼️ Upload Image File"):
-            image_file = st.file_uploader("Upload image with text", type=["png", "jpg", "jpeg"])
-            if image_file:
-                user_prompt = extract_text_from_image(image_file)
-                st.success(f"Extracted: {user_prompt}")
+    # Language Detection and Translation
+    original_language = detect_language(user_prompt)
+    translated_input = translate_text(user_prompt, dest_language="en")
 
-
-# --- Chat Handling ---
-if user_prompt:
+    # Store user message
     st.session_state.messages.append({"role": "user", "content": user_prompt})
 
-    if "qa_chain" in st.session_state:
-        translated_input, lang = translate_input(user_prompt)
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
 
-        with st.spinner("Thinking..."):
-            try:
-                raw_response = st.session_state.qa_chain.run(translated_input)
-                final_response = translate_output(raw_response, lang)
-            except Exception as e:
-                final_response = f"❌ Error: {e}"
-    else:
-        final_response = "⚠️ No PDF processed yet."
+    with st.spinner("Thinking..."):
+        try:
+            raw_response = st.session_state.qa_chain.run(translated_input)
+            final_response = translate_text(raw_response, dest_language=original_language)
+        except Exception as e:
+            final_response = f"⚠️ Error generating response: {e}"
 
     st.session_state.messages.append({"role": "assistant", "content": final_response})
-    st.rerun()
+
+    with st.chat_message("assistant"):
+        st.markdown(final_response)
