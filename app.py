@@ -28,14 +28,23 @@ with st.sidebar:
             st.write(faq["answer"])
 
 # --- QA Chain Setup ---
-if uploaded_file and "qa_chain" not in st.session_state:
+from pathlib import Path
+
+if "qa_chain" not in st.session_state:
+    if uploaded_file:
+        source_pdf = uploaded_file
+    else:
+        st.info("Using a sample document since no PDF is uploaded.")
+        source_pdf = open("data/sample.pdf", "rb")  # <- path to your default PDF
+
     try:
-        st.session_state.qa_chain = initialize_qa_chain(uploaded_file)
+        st.session_state.qa_chain = initialize_qa_chain(source_pdf)
         st.session_state.messages = [
-            {"role": "assistant", "content": "Hi there! Ask me anything about the PDF!"}
+            {"role": "assistant", "content": "Hi there! Ask me anything about the document."}
         ]
     except Exception as e:
         st.error(f"❌ PDF processing failed: {e}")
+
 
 # --- Fallback Message History ---
 if "messages" not in st.session_state:
