@@ -83,13 +83,14 @@ if user_prompt:
     if "qa_chain" in st.session_state:
         translated_input, lang = translate_input(user_prompt)
 
-        with st.spinner("Thinking..."):
-            try:
-                raw_response = st.session_state.qa_chain.invoke(translated_input)
-                final_response = translate_output(raw_response, lang)
-            except Exception as e:
-                final_response = f"❌ Error: {e}"
-    else:
-        final_response = "⚠️ No PDF processed yet."
+       with st.spinner("Thinking..."):
+    try:
+        raw_response = st.session_state.qa_chain.invoke(
+            {"query": translated_input},  # Note: Changed parameter name
+            timeout=30  # Add timeout
+        )
+        final_response = translate_output(raw_response["result"], lang)  # Access 'result' key
+    except Exception as e:
+        final_response = f"❌ Processing took too long or failed: {str(e)}"
 
     st.session_state.messages.append({"role": "assistant", "content": final_response})
