@@ -86,10 +86,10 @@ if user_prompt:
        with st.spinner("Thinking..."):
     try:
         raw_response = st.session_state.qa_chain.invoke(
-            {"query": translated_input},  # Note: Changed parameter name
-            timeout=30  # Add timeout
+            {"query": translated_input},
+            timeout=30
         )
-        final_response = translate_output(raw_response["result"], lang)  # Access 'result' key
+        final_response = translate_output(raw_response["result"], lang) 
     except Exception as e:
         final_response = f"❌ Processing took too long or failed: {str(e)}"
 
