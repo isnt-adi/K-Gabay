@@ -1,70 +1,67 @@
-import os
-import fitz  # PyMuPDF
-from dotenv import load_dotenv
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from transformers import pipeline, AutoTokenizer
 from langchain.chains import RetrievalQA
-from langchain_community.llms import HuggingFacePipeline
-from transformers import pipeline
-from backend.syst_instructions import QA_PROMPT
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
-from langchain_community.llms import HuggingFacePipeline
+from langchain.prompts import PromptTemplate
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.llms import HuggingFacePipeline
+from backend.prompts import QA_PROMPT
+import tempfile
+import os
 
-load_dotenv()
-HF_API_KEY = os.getenv("HF_API_KEY")
+# Initialize tokenizer and model
+MODEL_NAME = "google/flan-t5-base"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
-# --- Load Larger Model for Better Accuracy ---
-def load_llm():
-    model_name = "google/flan-t5-small"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    
-    pipe = pipeline(
-        "text2text-generation",
-        model=model,
-        tokenizer=tokenizer,
-        max_new_tokens=256,
-        truncation=True,
-        device=-1
-    )
-    return HuggingFacePipeline(pipeline=pipe)
+def truncate_input(text, max_tokens=512):
+    tokens = tokenizer.encode(text, truncation=True, max_length=max_tokens)
+    return tokenizer.decode(tokens, skip_special_tokens=True)
 
+def initialize_qa_chain(pdf_file):
+    try:
+        # Step 1: Save PDF temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(pdf_file.read())
+            tmp_path = tmp_file.name
 
-llm = load_llm()
+        # Step 2: Load PDF and split into chunks
+        loader = PyPDFLoader(tmp_path)
+        documents = loader.load()
 
-# --- Extract Text from Uploaded PDF ---
-def extract_text_from_pdf(uploaded_file):
-    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500, chunk_overlap=100
+        )
+        docs = text_splitter.split_documents(documents)
 
-# --- Initialize RAG Chain ---
-def initialize_qa_chain(uploaded_file):
-    raw_text = extract_text_from_pdf(uploaded_file)
+        # Step 3: Create FAISS index
+        embeddings = HuggingFaceEmbeddings()
+        vectorstore = FAISS.from_documents(docs, embeddings)
 
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=50
-    )
-    chunks = splitter.split_text(raw_text)
+        # Step 4: Set up generation pipeline
+        pipe = pipeline(
+            "text2text-generation",
+            model=MODEL_NAME,
+            tokenizer=MODEL_NAME,
+            max_length=512,
+            device=-1  # CPU
+        )
+        local_llm = HuggingFacePipeline(pipeline=pipe)
 
-    embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectordb = FAISS.from_texts(chunks, embedding=embedder)
+        prompt = QA_PROMPT
+        
+        # Step 6: Create RAG chain
+        qa_chain = RetrievalQA.from_chain_type(
+            llm=local_llm,
+            chain_type="stuff",
+            retriever=vectorstore.as_retriever(search_kwargs={"k": 5}),
+            chain_type_kwargs={"prompt": prompt},
+            return_source_documents=False
+        )
 
-    # Increase k to 4 for broader context, helps reduce hallucination
-    retriever = vectordb.as_retriever(
-        search_type="similarity",
-        search_kwargs={"k": 2}
-    )
+        # Clean up temp file
+        os.remove(tmp_path)
+        return qa_chain
 
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=retriever,
-        chain_type="stuff",
-        return_source_documents=False,
-        chain_type_kwargs={"prompt": QA_PROMPT}
-    )
-    return qa_chain
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize QA chain: {e}")
