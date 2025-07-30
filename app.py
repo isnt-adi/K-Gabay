@@ -83,14 +83,14 @@ if user_prompt:
     if "qa_chain" in st.session_state:
         translated_input, lang = translate_input(user_prompt)
 
-       with st.spinner("Thinking..."):
-    try:
-        raw_response = st.session_state.qa_chain.invoke(
-            {"query": translated_input},
-            timeout=30
-        )
-        final_response = translate_output(raw_response["result"], lang) 
-    except Exception as e:
-        final_response = f"❌ Processing took too long or failed: {str(e)}"
+        with st.spinner("Thinking..."):
+            try:
+                raw_response = st.session_state.qa_chain.invoke(
+                    {"query": translated_input},
+                    timeout=30
+                )
+                final_response = translate_output(raw_response["result"], lang) 
+            except Exception as e:
+                final_response = f"❌ Processing took too long or failed: {str(e)}"
 
     st.session_state.messages.append({"role": "assistant", "content": final_response})
