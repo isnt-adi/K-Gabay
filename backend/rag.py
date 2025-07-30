@@ -12,11 +12,12 @@ from backend.syst_instructions import QA_PROMPT
 load_dotenv()
 HF_API_KEY = os.getenv("HF_API_KEY")
 
+# --- Load Larger Model for Better Accuracy ---
 def load_llm():
     pipe = pipeline(
         "text2text-generation",
-        model="google/flan-t5-base",
-        tokenizer="google/flan-t5-base",
+        model="google/flan-t5-large",  # more accurate than flan-t5-base
+        tokenizer="google/flan-t5-large",
         device=-1,
         max_new_tokens=512
     )
@@ -24,6 +25,7 @@ def load_llm():
 
 llm = load_llm()
 
+# --- Extract Text from Uploaded PDF ---
 def extract_text_from_pdf(uploaded_file):
     doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
     text = ""
@@ -31,6 +33,7 @@ def extract_text_from_pdf(uploaded_file):
         text += page.get_text()
     return text
 
+# --- Initialize RAG Chain ---
 def initialize_qa_chain(uploaded_file):
     raw_text = extract_text_from_pdf(uploaded_file)
 
@@ -43,7 +46,11 @@ def initialize_qa_chain(uploaded_file):
     embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectordb = FAISS.from_texts(chunks, embedding=embedder)
 
-    retriever = vectordb.as_retriever(search_type="similarity", search_kwargs={"k": 2})
+    # Increase k to 4 for broader context, helps reduce hallucination
+    retriever = vectordb.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 4}
+    )
 
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
