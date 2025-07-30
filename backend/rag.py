@@ -14,18 +14,19 @@ import os
 MODEL_NAME = "google/flan-t5-large"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
-def truncate_input(text, max_tokens=512):
+def truncate_input(text: str, max_tokens: int = 512) -> str:
+    """Truncate text to fit within token limit."""
     tokens = tokenizer.encode(text, truncation=True, max_length=max_tokens)
     return tokenizer.decode(tokens, skip_special_tokens=True)
 
 def initialize_qa_chain(pdf_file):
     try:
-        # Step 1: Save PDF temporarily
+        # Save PDF to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             tmp_file.write(pdf_file.read())
             tmp_path = tmp_file.name
 
-        # Step 2: Load PDF and split into chunks
+        # Load PDF and split into chunks
         loader = PyPDFLoader(tmp_path)
         documents = loader.load()
 
@@ -34,34 +35,31 @@ def initialize_qa_chain(pdf_file):
         )
         docs = text_splitter.split_documents(documents)
 
-        # Step 3: Create FAISS index with explicit model name
+        # Create FAISS vector store with MiniLM embeddings
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         vectorstore = FAISS.from_documents(docs, embeddings)
 
-        # Step 4: Set up generation pipeline
+        # Setup HuggingFace pipeline for generation
         pipe = pipeline(
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
             max_length=512,
+            truncation=True,
             device=-1  # CPU
         )
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
-        # Step 5: Prompt
-        prompt = QA_PROMPT
-
-        # Step 6: Create QA chain (RAG)
+        # Create Retrieval-Augmented QA chain
         qa_chain = RetrievalQA.from_chain_type(
             llm=local_llm,
             chain_type="stuff",
             retriever=vectorstore.as_retriever(search_kwargs={"k": 5}),
-            chain_type_kwargs={"prompt": prompt},
+            chain_type_kwargs={"prompt": QA_PROMPT},
             return_source_documents=False
         )
 
-        # Clean up temp file
-        os.remove(tmp_path)
+        os.remove(tmp_path)  # Clean up
         return qa_chain
 
     except Exception as e:
