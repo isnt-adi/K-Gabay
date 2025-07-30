@@ -8,20 +8,25 @@ from langchain.chains import RetrievalQA
 from langchain_community.llms import HuggingFacePipeline
 from transformers import pipeline
 from backend.syst_instructions import QA_PROMPT
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+from langchain_community.llms import HuggingFacePipeline
 
 load_dotenv()
 HF_API_KEY = os.getenv("HF_API_KEY")
 
 # --- Load Larger Model for Better Accuracy ---
 def load_llm():
+    model_name = "google/flan-t5-large"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     pipe = pipeline(
         "text2text-generation",
-        model="google/flan-t5-large",  # more accurate than flan-t5-base
-        tokenizer="google/flan-t5-large",
-        device=-1,
+        model=model,
+        tokenizer=tokenizer,
         max_new_tokens=512
     )
     return HuggingFacePipeline(pipeline=pipe)
+
 
 llm = load_llm()
 
