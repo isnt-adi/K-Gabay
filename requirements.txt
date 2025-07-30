@@ -2,7 +2,6 @@ streamlit
 python-dotenv
 transformers
 torch
-langchain==0.1.14
 faiss-cpu
 pymupdf
 Pillow
@@ -12,3 +11,5 @@ googletrans==4.0.0rc1
 pydantic==1.10.13
 sentence-transformers
 pypdf
+langchain>=0.1.16
+langchain-community>=0.0.30
