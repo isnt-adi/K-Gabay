@@ -1,3 +1,4 @@
+https://k-gabay-qbfmtzncqr6wbx2bawr88f.streamlit.app/
 
 # 📘 K-Gabay: An AI College Assistant for Filipino Youth
 
