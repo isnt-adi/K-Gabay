@@ -1,17 +1,19 @@
+# rag.py
 from transformers import pipeline, AutoTokenizer
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFacePipeline
 from backend.syst_instructions import QA_PROMPT
 import tempfile
 import os
+from io import BytesIO
 
-# Initialize tokenizer and model
-MODEL_NAME = "google/flan-t5-base"
+# Initialize tokenizer and model (still at module level)
+MODEL_NAME = "google/flan-t5-large"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 def truncate_input(text: str, max_tokens: int = 512) -> str:
@@ -19,11 +21,13 @@ def truncate_input(text: str, max_tokens: int = 512) -> str:
     tokens = tokenizer.encode(text, truncation=True, max_length=max_tokens)
     return tokenizer.decode(tokens, skip_special_tokens=True)
 
-def initialize_qa_chain(pdf_file):
+def initialize_qa_chain(pdf_file_like):
     try:
-        # Save PDF to temp file
+        if hasattr(pdf_file_like, 'seek'):
+            pdf_file_like.seek(0)
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            tmp_file.write(pdf_file.read())
+            tmp_file.write(pdf_file_like.read())
             tmp_path = tmp_file.name
 
         # Load PDF and split into chunks
@@ -44,12 +48,10 @@ def initialize_qa_chain(pdf_file):
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
-            max_length=200,
+            max_length=512,
             truncation=True,
-            device="cpu",
-            model_kwargs={"cache_dir": "./models"}
+            device=-1
         )
-        
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
         # Create Retrieval-Augmented QA chain
@@ -65,4 +67,6 @@ def initialize_qa_chain(pdf_file):
         return qa_chain
 
     except Exception as e:
+        if 'tmp_path' in locals() and os.path.exists(tmp_path):
+            os.remove(tmp_path)
         raise RuntimeError(f"Failed to initialize QA chain: {e}")
