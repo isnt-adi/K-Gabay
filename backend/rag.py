@@ -12,7 +12,7 @@ import tempfile
 import os
 from io import BytesIO
 
-# Initialize tokenizer and model (still at module level)
+# Initialize tokenizer and model
 MODEL_NAME = "google/flan-t5-large"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
@@ -30,40 +30,41 @@ def initialize_qa_chain(pdf_file_like):
             tmp_file.write(pdf_file_like.read())
             tmp_path = tmp_file.name
 
-        # Load PDF and split into chunks
+        # Load and split PDF into chunks
         loader = PyPDFLoader(tmp_path)
         documents = loader.load()
 
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500, chunk_overlap=100
+            chunk_size=500,
+            chunk_overlap=100
         )
         docs = text_splitter.split_documents(documents)
 
-        # Create FAISS vector store with MiniLM embeddings
+        # FAISS vector store with MiniLM embeddings
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         vectorstore = FAISS.from_documents(docs, embeddings)
 
-        # Setup HuggingFace pipeline for generation
+        # HuggingFace generation pipeline
         pipe = pipeline(
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
-            max_length=512,
-            truncation=True,
-            device=-1
+            device=-1, 
+            max_new_tokens=512, 
+            truncation=True
         )
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
-        # Create Retrieval-Augmented QA chain
+        # RetrievalQA chain with refine mode for better logic
         qa_chain = RetrievalQA.from_chain_type(
             llm=local_llm,
-            chain_type="stuff",
-            retriever=vectorstore.as_retriever(search_kwargs={"k": 5}),
+            chain_type="refine",
+            retriever=vectorstore.as_retriever(search_kwargs={"k": 10}),
             chain_type_kwargs={"prompt": QA_PROMPT},
             return_source_documents=False
         )
 
-        os.remove(tmp_path)  # Clean up
+        os.remove(tmp_path)
         return qa_chain
 
     except Exception as e:
