@@ -48,27 +48,25 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- Input Selector ---
-col1, col2 = st.columns([3, 1])
-with col2:
-    input_mode = st.radio("Choose input type:", ["Text", "Audio", "Image"])
-with col1:
-    user_prompt = ""
+# --- Input Row: Audio + Image + Text ---
+input_cols = st.columns([1, 1, 5])
+user_prompt = ""
 
-    if input_mode == "Text":
+with input_cols[0]:
+    audio_file = st.file_uploader("🎙️", type=["wav", "mp3"], label_visibility="collapsed", key="audio")
+    if audio_file:
+        user_prompt = transcribe_audio(audio_file)
+        st.success(f"Transcribed: {user_prompt}")
+
+with input_cols[1]:
+    image_file = st.file_uploader("🖼️", type=["png", "jpg", "jpeg"], label_visibility="collapsed", key="image")
+    if image_file:
+        user_prompt = extract_text_from_image(image_file)
+        st.success(f"Extracted: {user_prompt}")
+
+with input_cols[2]:
+    if not user_prompt:
         user_prompt = st.chat_input("Type your message here...")
-
-    elif input_mode == "Audio":
-        audio_file = st.file_uploader("Upload audio", type=["wav", "mp3"])
-        if audio_file:
-            user_prompt = transcribe_audio(audio_file)
-            st.success(f"Transcribed: {user_prompt}")
-
-    elif input_mode == "Image":
-        image_file = st.file_uploader("Upload image with text", type=["png", "jpg", "jpeg"])
-        if image_file:
-            user_prompt = extract_text_from_image(image_file)
-            st.success(f"Extracted: {user_prompt}")
 
 # --- Chat Handling ---
 if user_prompt:
