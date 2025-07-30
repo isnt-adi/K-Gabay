@@ -48,30 +48,36 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- Input Selector ---
-col1, col2 = st.columns([3, 1])
-with col2:
-    input_mode = st.radio("Choose input type:", ["Text", "Audio", "Image"])
-with col1:
-    user_prompt = ""
+# --- Chat Input Form ---
+user_prompt = ""
+with st.form("chat_input", clear_on_submit=True):
+    col1, col2, col3 = st.columns([6, 1, 1])
 
-    if input_mode == "Text":
-        user_prompt = st.chat_input("Type your message here...")
+    # Text input
+    user_text = col1.text_input("Ask K-Gabay something", label_visibility="collapsed")
 
-    elif input_mode == "Audio":
-        with st.expander("🎤 Upload Audio File"):
-            audio_file = st.file_uploader("Upload audio", type=["wav", "mp3"])
-            if audio_file:
-                user_prompt = transcribe_audio(audio_file)
-                st.success(f"Transcribed: {user_prompt}")
+    # Audio upload via mic icon
+    with col2:
+        st.markdown('<label for="audio-upload" class="upload-icon">🎤</label>', unsafe_allow_html=True)
+        user_audio = st.file_uploader("Audio", type=["mp3", "wav", "m4a"], key="audio-upload", label_visibility="collapsed")
 
-    elif input_mode == "Image":
-        with st.expander("🖼️ Upload Image File"):
-            image_file = st.file_uploader("Upload image with text", type=["png", "jpg", "jpeg"])
-            if image_file:
-                user_prompt = extract_text_from_image(image_file)
-                st.success(f"Extracted: {user_prompt}")
+    # Image upload via photo icon
+    with col3:
+        st.markdown('<label for="image-upload" class="upload-icon">📷</label>', unsafe_allow_html=True)
+        user_image = st.file_uploader("Image", type=["jpg", "jpeg", "png"], key="image-upload", label_visibility="collapsed")
 
+    submitted = st.form_submit_button("📨 Send")
+
+# --- Input Prioritization ---
+if submitted:
+    if user_text:
+        user_prompt = user_text
+    elif user_audio:
+        user_prompt = transcribe_audio(user_audio)
+        st.success(f"Transcribed: {user_prompt}")
+    elif user_image:
+        user_prompt = extract_text_from_image(user_image)
+        st.success(f"Extracted: {user_prompt}")
 
 # --- Chat Handling ---
 if user_prompt:
