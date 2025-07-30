@@ -54,7 +54,7 @@ with st.form("chat_input", clear_on_submit=True):
     col1, col2, col3 = st.columns([6, 1, 1])
 
     # Text input
-    user_text = col1.text_input("Ask K-Gabay something", label_visibility="collapsed")
+    user_text = col1.text_input("Ask K-Gabay something")
 
     # Audio upload via mic icon
     with col2:
