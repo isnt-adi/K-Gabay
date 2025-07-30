@@ -6,7 +6,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms import HuggingFacePipeline
-from backend.prompts import QA_PROMPT
+from backend.syst_instructions import QA_PROMPT
 import tempfile
 import os
 
