@@ -85,7 +85,7 @@ if user_prompt:
 
         with st.spinner("Thinking..."):
             try:
-                raw_response = st.session_state.qa_chain.invoke(
+                raw_response = st.session_state.qa_chain.run(
                     {"query": translated_input},
                     timeout=30
                 )
