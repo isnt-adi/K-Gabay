@@ -11,7 +11,7 @@ import tempfile
 import os
 
 # Initialize tokenizer and model
-MODEL_NAME = "google/flan-t5-base"
+MODEL_NAME = "google/flan-t5-large"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 def truncate_input(text, max_tokens=512):
