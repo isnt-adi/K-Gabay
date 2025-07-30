@@ -16,15 +16,17 @@ HF_API_KEY = os.getenv("HF_API_KEY")
 
 # --- Load Larger Model for Better Accuracy ---
 def load_llm():
-    model_name = "google/flan-t5-base"
+    model_name = "google/flan-t5-small"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    
     pipe = pipeline(
         "text2text-generation",
         model=model,
         tokenizer=tokenizer,
+        max_new_tokens=256,
         truncation=True,
-        max_new_tokens=512
+        device=-1
     )
     return HuggingFacePipeline(pipeline=pipe)
 
@@ -55,7 +57,7 @@ def initialize_qa_chain(uploaded_file):
     # Increase k to 4 for broader context, helps reduce hallucination
     retriever = vectordb.as_retriever(
         search_type="similarity",
-        search_kwargs={"k": 4}
+        search_kwargs={"k": 2}
     )
 
     qa_chain = RetrievalQA.from_chain_type(
