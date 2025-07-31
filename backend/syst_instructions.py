@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 
 QA_PROMPT = PromptTemplate(
-    input_variables=["context", "question"],
+    input_variables=["context_str", "question"],
     template="""
 You are a helpful assistant trained to answer user questions using only the provided context from an educational PDF. 
 
@@ -17,7 +17,7 @@ Be concise and user-friendly. Refrain from repeating the entire question in your
 ---
 
 Context:
-{context}
+{context_str}
 
 Question:
 {question}
@@ -27,7 +27,7 @@ Answer (approximate if needed):
 )
 
 REFINE_PROMPT = PromptTemplate(
-    input_variables=["question", "existing_answer", "context"],
+    input_variables=["question", "existing_answer", "context_str"],
     template="""
 You are refining an existing answer based on new information from additional context.
 
@@ -38,7 +38,7 @@ Current Answer:
 {existing_answer}
 
 New Context:
-{context}
+{context_str}
 
 Update the answer only if the new context provides helpful clarification or correction.
 
