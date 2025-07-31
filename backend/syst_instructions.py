@@ -25,3 +25,23 @@ Question:
 Answer (approximate if needed):
 """.strip()
 )
+
+REFINE_PROMPT = PromptTemplate(
+    input_variables=["question", "existing_answer", "context"],
+    template="""
+You are refining an existing answer based on new information from additional context.
+
+Original Question:
+{question}
+
+Current Answer:
+{existing_answer}
+
+New Context:
+{context}
+
+Update the answer only if the new context provides helpful clarification or correction.
+
+Refined Answer:
+""".strip()
+)
