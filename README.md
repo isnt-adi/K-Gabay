@@ -1,7 +1,10 @@
+---
 Streamlit link
 https://k-gabay-qbfmtzncqr6wbx2bawr88f.streamlit.app/
+---
 Huggingface Spaces link
 https://huggingface.co/spaces/isnt-adi/K-Gabay
+---
 
 # 📘 K-Gabay: An AI College Assistant for Filipino Youth
 
