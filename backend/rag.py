@@ -1,16 +1,14 @@
-# rag.py
+# === rag.py ===
 from transformers import pipeline, AutoTokenizer
 from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFacePipeline
-from backend.syst_instructions import QA_PROMPT
+from backend.syst_instructions import QA_PROMPT, REFINE_PROMPT
 import tempfile
 import os
-from io import BytesIO
 
 # Initialize tokenizer and model
 MODEL_NAME = "google/flan-t5-large"
@@ -49,18 +47,21 @@ def initialize_qa_chain(pdf_file_like):
             "text2text-generation",
             model=MODEL_NAME,
             tokenizer=MODEL_NAME,
-            device=-1, 
-            max_new_tokens=512, 
+            device=-1,
+            max_new_tokens=512,
             truncation=True
         )
         local_llm = HuggingFacePipeline(pipeline=pipe)
 
-        # RetrievalQA chain with refine mode for better logic
+        # RetrievalQA chain using refine mode
         qa_chain = RetrievalQA.from_chain_type(
             llm=local_llm,
             chain_type="refine",
             retriever=vectorstore.as_retriever(search_kwargs={"k": 10}),
-            chain_type_kwargs={"prompt": QA_PROMPT},
+            chain_type_kwargs={
+                "question_prompt": QA_PROMPT,
+                "refine_prompt": REFINE_PROMPT
+            },
             return_source_documents=False
         )
 
